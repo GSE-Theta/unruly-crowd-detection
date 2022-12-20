@@ -14,9 +14,9 @@ samples = []
 model = get_model()
 model.summary()
 
-for fold in os.listdir('dataset'):
+for fold in sorted(os.listdir('dataset/k-fold-validation')):
     valid_ds = image_dataset_from_directory(
-        'dataset/%s/valid' % fold,
+        'dataset/k-fold-validation/%s/valid' % fold,
         labels='inferred',
         label_mode='categorical',
         color_mode='rgb',

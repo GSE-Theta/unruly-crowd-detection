@@ -11,7 +11,7 @@ parser.add_argument('--data', type=str, required=True)
 args = parser.parse_args()
 
 train_ds = image_dataset_from_directory(
-    'dataset/%s/train' % args.data,
+    'dataset/k-fold-validation/%s/train' % args.data,
     labels='inferred',
     label_mode='categorical',
     color_mode='rgb',
