@@ -3,8 +3,8 @@ import shutil
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 
-f_abnormal = os.listdir('dataset/umn_dataset/abnormal')
-f_normal = os.listdir('dataset/umn_dataset/normal')
+f_abnormal = sorted(os.listdir('dataset/umn_dataset/abnormal'))
+f_normal = sorted(os.listdir('dataset/umn_dataset/normal'))
 n_abnormal = len(f_abnormal)
 n_normal = len(f_normal)
 y = np.concatenate([np.zeros(n_abnormal), np.ones(n_normal)])
@@ -13,7 +13,7 @@ n = len(y)
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 print(n_abnormal, n_normal)
 
-shutil.rmtree('dataset/k-fold-validation')
+shutil.rmtree('dataset/k-fold-validation', ignore_errors=True)
 
 for i, (train_index, test_index) in enumerate(skf.split(np.zeros(n), y)):
     # select rows
