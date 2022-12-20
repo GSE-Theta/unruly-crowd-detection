@@ -1,8 +1,10 @@
-import tensorflow as tf
+from keras.utils import image_dataset_from_directory
 from scipy.stats import ttest_1samp
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
+from tensorflow import data, concat, argmax
 from model import preprocess_input, get_model
 import argparse
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--mean', type=float, required=True)
@@ -12,22 +14,22 @@ samples = []
 model = get_model()
 model.summary()
 
-for data in ['fold-1', 'fold-2', 'fold-3', 'fold-4', 'fold-5']:
-    valid_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        'dataset/%s/valid' % data,
+for fold in os.listdir('dataset'):
+    valid_ds = image_dataset_from_directory(
+        'dataset/%s/valid' % fold,
         labels='inferred',
         label_mode='categorical',
         color_mode='rgb',
         batch_size=16,
         image_size=(214, 320)
     )
-    valid_ds = valid_ds.map(preprocess_input).cache().prefetch(buffer_size=tf.data.AUTOTUNE)
-    model.load_weights('model/%s_weights.h5' % data)
+    valid_ds = valid_ds.map(preprocess_input).cache().prefetch(buffer_size=data.AUTOTUNE)
+    model.load_weights('model/%s_weights.h5' % fold)
 
-    y_true = tf.concat([y for x, y in valid_ds], axis=0)
+    y_true = concat([y for x, y in valid_ds], axis=0)
     y_pred = model.predict(valid_ds)
-    y_true = tf.argmax(y_true, axis=1)
-    y_pred = tf.argmax(y_pred, axis=1)
+    y_true = argmax(y_true, axis=1)
+    y_pred = argmax(y_pred, axis=1)
 
     tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
     precision, recall, f1_score, _ = precision_recall_fscore_support(y_true, y_pred, average='weighted')
