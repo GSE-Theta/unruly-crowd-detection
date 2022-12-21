@@ -2,16 +2,24 @@ from keras.applications.xception import preprocess_input
 from tensorflow import expand_dims, argmax
 from model import get_model
 import cv2
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--model', type=str, required=True)
+parser.add_argument('--video', type=str, required=True)
+parser.add_argument('--out', type=str)
+args = parser.parse_args()
 
 model = get_model()
-model.load_weights('model/fold-2_weights.h5')
+model.load_weights('model/%s_weights.h5' % args.model)
 
 # Open the video file
-cap = cv2.VideoCapture('video/Crowd-Activity-All.avi')
+cap = cv2.VideoCapture('video/%s' % args.video)
 width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-out = cv2.VideoWriter('video/output.avi', cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
+if args.out is not None:
+    out = cv2.VideoWriter('video/%s' % args.out, cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
 
 counter = [0, 0]
 detect = False
@@ -74,7 +82,8 @@ while cap.isOpened():
 
     # Display the frame
     cv2.imshow('Video', frame)
-    out.write(frame)
+    if args.out is not None:
+        out.write(frame)
     
     # Wait for the user to press a key
     if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -82,7 +91,9 @@ while cap.isOpened():
 
 # Release the video capture object
 cap.release()
-out.release()
+
+if args.out is not None:
+    out.release()
 
 # Destroy all windows
 cv2.destroyAllWindows()

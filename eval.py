@@ -2,7 +2,7 @@ from keras.losses import CategoricalCrossentropy
 from keras.metrics import CategoricalAccuracy
 from keras.utils import image_dataset_from_directory
 from tensorflow import data, concat, argmax
-from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix, classification_report
 from model import preprocess_input, get_model
 import argparse
 
@@ -23,11 +23,12 @@ valid_ds = valid_ds.map(preprocess_input).cache().prefetch(buffer_size=data.AUTO
 model = get_model()
 model.load_weights('model/%s_weights.h5' % args.data)
 model.compile(loss=CategoricalCrossentropy(from_logits=True), metrics=[CategoricalAccuracy(name='accuracy')])
-model.evaluate(valid_ds)
 
-true_labels = concat([y for _, y in valid_ds], axis=0)
-predicted_labels = model.predict(valid_ds)
-true_labels = argmax(true_labels, axis=1)
-predicted_labels = argmax(predicted_labels, axis=1)
+y_true = concat([y for _, y in valid_ds], axis=0)
+y_pred = model.predict(valid_ds)
+y_true = argmax(y_true, axis=1)
+y_pred = argmax(y_pred, axis=1)
 
-print(classification_report(true_labels, predicted_labels, target_names=['abnormal', 'normal'], digits=4))
+tp, fn, fp, tn = confusion_matrix(y_true, y_pred).ravel()
+print('tp: %d, fn: %d, fp: %d, tn: %d' % (tp, fn, fp, tn))
+print(classification_report(y_true, y_pred, target_names=['abnormal', 'normal'], digits=4))
