@@ -39,6 +39,6 @@ for fold in sorted(os.listdir('dataset/k-fold-validation')):
     samples.append(f1_score)
     del valid_ds, y_true, y_pred
 
-t_test = ttest_1samp(samples, popmean=args.mean, alternative="less")
+t_test = ttest_1samp(samples, popmean=args.mean, alternative='less')
 print('avg. f1-score: %f' % (sum(samples) / len(samples)))
 print('t-statistic: %f, p-value: %f' % (t_test.statistic, t_test.pvalue))

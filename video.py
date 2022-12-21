@@ -1,10 +1,20 @@
-import tensorflow as tf
+from keras.applications.xception import preprocess_input
+from tensorflow import expand_dims, argmax
+from model import get_model
 import cv2
 
-model = tf.keras.models.load_model('model/baseline')
+model = get_model()
+model.load_weights('model/fold-2_weights.h5')
 
 # Open the video file
-cap = cv2.VideoCapture('dataset/Crowd-Activity-All.avi')
+cap = cv2.VideoCapture('video/Crowd-Activity-All.avi')
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+out = cv2.VideoWriter('video/output.avi', cv2.VideoWriter_fourcc(*'DIVX'), 30, (width, height))
+
+counter = [0, 0]
+detect = False
 
 # Check if the video is opened successfully
 if not cap.isOpened():
@@ -19,12 +29,27 @@ while cap.isOpened():
     if not ret:
         break
     
-    input = frame[26:, :]
-    input = tf.keras.applications.xception.preprocess_input(input)
-    input = tf.expand_dims(input, axis=0)
+    input = cv2.resize(frame, (320, 214), interpolation=cv2.INTER_LINEAR)
+    input = preprocess_input(input)
+    input = expand_dims(input, axis=0)
     prediction = model.predict(input, verbose=0)[0]
 
-    if tf.argmax(prediction) == 0:
+    if argmax(prediction) == 0:
+        counter[1] = 0
+        if counter[0] < 30:
+            counter[0] += 1
+        else:
+            counter[0] = 0
+            detect = True
+    elif detect:
+        counter[0] = 0
+        if counter[1] < 10:
+            counter[1] += 1
+        else:
+            counter[1] = 0
+            detect = False
+    
+    if detect:
         # Define the text to write
         text = 'Abnormal'
 
@@ -33,7 +58,7 @@ while cap.isOpened():
         font_scale = 1
 
         # Define the color and thickness
-        color = (255, 0, 0)
+        color = (0, 0, 255)
         thickness = 2
 
         # Get the size of the text
@@ -49,6 +74,7 @@ while cap.isOpened():
 
     # Display the frame
     cv2.imshow('Video', frame)
+    out.write(frame)
     
     # Wait for the user to press a key
     if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -56,6 +82,7 @@ while cap.isOpened():
 
 # Release the video capture object
 cap.release()
+out.release()
 
 # Destroy all windows
 cv2.destroyAllWindows()
