@@ -8,9 +8,10 @@ First create `dataset` directory and put your dataset into it:
 mkdir dataset
 ```
 
-Create `model` directory:
+Create `model` directory and create conda environment:
 ```
 mkdir model
+conda env create -n tensorflow --file environment.yml
 ```
 
 Run `split.py`, this will split your dataset into 5-fold for cross-validation:
@@ -19,7 +20,7 @@ Run `split.py`, this will split your dataset into 5-fold for cross-validation:
 python split.py
 ```
 
-Run `train_all.py` for train 5 models consecutively, or `train.py` to spectific the fold of data to train:
+Run `train_all.py` to train 5 models consecutively, or `train.py` to specific the fold of data to train:
 ```
 python train_all.py
 # or
