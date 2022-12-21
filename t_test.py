@@ -31,13 +31,14 @@ for fold in sorted(os.listdir('dataset/k-fold-validation')):
     y_true = argmax(y_true, axis=1)
     y_pred = argmax(y_pred, axis=1)
 
-    tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+    tp, fn, fp, tn = confusion_matrix(y_true, y_pred).ravel()
     precision, recall, f1_score, _ = precision_recall_fscore_support(y_true, y_pred, average='weighted')
 
-    print('tn: %d, fp: %d, fn: %d, tp: %d' % (tn, fp, fn, tp))
+    print('tp: %d, fn: %d, fp: %d, tn: %d' % (tp, fn, fp, tn))
     print('precision: %f, recall: %f, f1_score: %f' % (precision, recall, f1_score))
     samples.append(f1_score)
     del valid_ds, y_true, y_pred
 
 t_test = ttest_1samp(samples, popmean=args.mean, alternative="less")
+print('avg. f1-score: %f' % (sum(samples) / len(samples)))
 print('t-statistic: %f, p-value: %f' % (t_test.statistic, t_test.pvalue))
